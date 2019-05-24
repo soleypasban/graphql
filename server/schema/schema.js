@@ -1,8 +1,8 @@
 const graphql = require('graphql')
 const { GraphQLObjectType, GraphQLSchema } = graphql
-const { GraphQLString, GraphQLInt, GraphQLID, GraphQLList } = graphql
-const _ = require('lodash')
-const { FakeProducts, FakeFactories } = require('./fake')
+const { GraphQLString, GraphQLInt, GraphQLID, GraphQLList, GraphQLNonNull } = graphql
+const Product = require('../models/product')
+const Factory = require('../models/factory')
 
 const ProductType = new GraphQLObjectType({
     name: 'Product',
@@ -13,7 +13,7 @@ const ProductType = new GraphQLObjectType({
         factory: {
             type: FactoryType,
             resolve(parent, args) {
-                return _.find(FakeFactories, { id: parent.factory })
+                return Factory.findById(parent.factory)
             }
         },
     })
@@ -28,7 +28,7 @@ const FactoryType = new GraphQLObjectType({
         products: {
             type: new GraphQLList(ProductType),
             resolve(parent, args) {
-                return _.filter(FakeProducts, { factory: parent.id })
+                return Product.find({ id: parent.factory })
             }
         },
     })
@@ -40,36 +40,69 @@ const RootQuery = new GraphQLObjectType({
         products: {
             type: new GraphQLList(ProductType),
             resolve(parent, args) {
-                return FakeProducts
+                return Product.find({})
             }
         },
         factories: {
             type: new GraphQLList(FactoryType),
             resolve(parent, args) {
-                return FakeFactories
+                return Factory.find({})
             }
         },
         product: {
             type: ProductType,
-            args: {
-                id: { type: GraphQLID }
-            },
+            args: { id: { type: GraphQLID } },
             resolve(parent, args) {
-                return _.find(FakeProducts, { id: args.id })
+                return Product.findById(args.id)
             }
         },
         factory: {
             type: FactoryType,
-            args: {
-                id: { type: GraphQLID }
-            },
+            args: { id: { type: GraphQLID } },
             resolve(parent, args) {
-                return _.find(FakeFactories, { id: args.id })
+                return Factory.findById(args.id)
             }
         },
     })
 })
 
+const Mutation = new GraphQLObjectType({
+    name: 'Mutation',
+    fields: {
+        addProduct: {
+            type: ProductType,
+            args: {
+                name: { type: new GraphQLNonNull(GraphQLString) },
+                amount: { type: new GraphQLNonNull(GraphQLInt) },
+                factory: { type: new GraphQLNonNull(GraphQLID) },
+            },
+            resolve(parent, args) {
+                const product = new Product({
+                    name: args.name,
+                    amount: args.amount,
+                    factory: args.factory
+                });
+                return product.save()
+            }
+        },
+        addFactory: {
+            type: FactoryType,
+            args: {
+                name: { type: new GraphQLNonNull(GraphQLString) },
+                location: { type: new GraphQLNonNull(GraphQLString) },
+            },
+            resolve(parent, args) {
+                const factory = new Factory({
+                    name: args.name,
+                    location: args.location,
+                });
+                return factory.save()
+            }
+        }
+    }
+})
+
 module.exports = new GraphQLSchema({
-    query: RootQuery
+    query: RootQuery,
+    mutation: Mutation
 })
