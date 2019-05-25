@@ -7,7 +7,7 @@ const Factory = require('../models/factory')
 const ProductType = new GraphQLObjectType({
     name: 'Product',
     fields: () => ({
-        id: { type: GraphQLID },
+        _id: { type: GraphQLID },
         name: { type: GraphQLString },
         amount: { type: GraphQLInt },
         factory: {
@@ -22,7 +22,7 @@ const ProductType = new GraphQLObjectType({
 const FactoryType = new GraphQLObjectType({
     name: 'Factory',
     fields: () => ({
-        id: { type: GraphQLID },
+        _id: { type: GraphQLID },
         name: { type: GraphQLString },
         location: { type: GraphQLString },
         products: {
