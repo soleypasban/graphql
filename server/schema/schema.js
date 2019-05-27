@@ -39,8 +39,18 @@ const RootQuery = new GraphQLObjectType({
     fields: () => ({
         products: {
             type: new GraphQLList(ProductType),
+            args: {
+                first: { type: GraphQLInt },
+                offset: { type: GraphQLInt }
+            },
             resolve(parent, args) {
+                const first = Math.max(Number(args.first), 1)
+                const offset = Math.max(Number(args.offset), 1)
+                console.log({ first, offset, args })
                 return Product.find({})
+                    .skip(offset * (first - 1))
+                    .limit(offset)
+                // return Product.find({})
             }
         },
         factories: {

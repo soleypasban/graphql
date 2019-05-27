@@ -1,7 +1,8 @@
 import React from 'react';
 import './App.css';
 import { Booklist } from './Booklist';
-import { ApolloClient, gql } from 'apollo-boost'
+import { ApolloClient } from 'apollo-boost'
+import { ApolloProvider } from 'react-apollo'
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { HttpLink } from 'apollo-link-http';
 
@@ -14,22 +15,24 @@ const client = new ApolloClient({
   link
 })
 
-client.query({
-  query: gql`
-    {
-      products {
-        _id
-        name
-      }
-    }
-  `
-}).then(res => console.log(res))
+// client.query({
+//   query: gql`
+//     {
+//       products {
+//         _id
+//         name
+//       }
+//     }
+//   `
+// }).then(res => console.log(res))
 
 function App() {
   return (
-    <div className="App">
-      <Booklist />
-    </div>
+    <ApolloProvider client={client}>
+      <div className="App">
+        <Booklist />
+      </div>
+    </ApolloProvider>
   );
 }
 
